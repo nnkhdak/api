@@ -7,12 +7,14 @@ $dbname = 'eikendb';
 $username = 'eikenuser';
 $passwd = 'hife84ty';
 
-$dsn = DaoUtils::toDSN($endpoint, $port, $dbname);
+$dsn = "oci:dbname=//$endpoint:$port/$dbname";
 $conn = DaoUtils::connect($dsn, $username, $passwd);
 
-$sql = 'SELECT count(1) as cnt FROM T_ACCOUNT WHERE stepid = "nona"';
-foreach ($conn->query($sql) as $row) {
-    echo var_export($row, true);
+$sql = "SELECT * FROM T_GROUP Where GROUPID like '5000%'";
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+$rows = $stmt->fetchAll();
+foreach ($rows as $row) {
+    echo var_export($row['GROUPID'], true);
 }
 ?>
-hehe
