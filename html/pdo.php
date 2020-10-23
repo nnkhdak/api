@@ -7,7 +7,7 @@ $dbname = 'eikendb';
 $username = 'eikenuser';
 $passwd = 'hife84ty';
 
-$dsn = DaoUtils::toDSN($endpoint,$port,$dbname);
+$dsn = DaoUtils::toDSN($endpoint, $port, $dbname);
 $conn = DaoUtils::connect($dsn, $username, $passwd);
 
 $sql = 'SELECT count(1) as cnt FROM T_ACCOUNT WHERE stepid = "nona"';
