@@ -5,6 +5,10 @@ class Statics {
     const USER_CONST = 'user';
     const PASS_CONST = 'pass';
     const OPTION_CONST = 'option';
+    const PROTOCOL_CONST = 'protocol';
+    const ENDPOINT_CONST = 'endpoint';
+    const PORT_CONST = 'port';
+    const DATABASE_CONST = 'database';
 
     const ENV_ENVIRONMENT_CONST = 'ENVIRONMENT';
     const ENV_LOCAL_CONST = 'local';
@@ -23,7 +27,21 @@ class Statics {
      * @return PDO
      */
     public static function connectDatabase($param) {
-        $dsn = $param[self::DSN_CONST];
+        $dsn = null;
+        if (array_key_exists(self::DSN_CONST, $param)) {
+            $dsn = $param[self::DSN_CONST];
+        } else if (
+            array_key_exists(self::PROTOCOL_CONST, $param)
+            && array_key_exists(self::ENDPOINT_CONST, $param)
+            && array_key_exists(self::PORT_CONST, $param)
+            && array_key_exists(self::DATABASE_CONST, $param)
+        ) {
+            $protocol = $param[self::PROTOCOL_CONST];
+            $endpoint = $param[self::ENDPOINT_CONST];
+            $port = $param[self::PORT_CONST];
+            $dbname = $param[self::DATABASE_CONST];
+            $dsn = "$protocol:dbname=//$endpoint:$port/$dbname";
+        }
         $username = $param[self::USER_CONST];
         $passwd = $param[self::PASS_CONST];
         $pdo = new PDO($dsn, $username, $passwd);
@@ -86,27 +104,33 @@ class Statics {
      * @param boolean throwException エラー発生時に例外をthrowするか(true:する, false:戻り値)
      * @return array(string => string) key=valueの連想配列
      */
-    public static function readIniFile($name, $dir = './', $throwException = true) {
+    public static function readIniFile($name, $process_sections = true, $dir = './', $throwException = true) {
         $result = array();
 
         $prefix = "$dir/$name";
         $prefix = str_replace('//', '/', $prefix);
         $path = "$prefix.ini";
         if (!file_exists($path)) {
-            $result = "notfound[$path]";
             if ($throwException) {
+                $result = "notfound[$path]";
                 throw new Exception($result);
             }
         } else {
-            $result = parse_ini_file($path);
+            $result = parse_ini_file($path, $process_sections);
         }
 
         $env = self::nowEnvironment();
+
         $path = "$prefix.$env.ini";
-        echo "$path\n<br/>";
         if (file_exists($path)) {
-            $tmp = parse_ini_file($path);
-            $result = array_merge($result, $tmp);
+            $tmp = parse_ini_file($path, $process_sections);
+            $result = array_replace_recursive($result, $tmp);
+        }
+
+        $path = $prefix . "_" . "$env.ini";
+        if (file_exists($path)) {
+            $tmp = parse_ini_file($path, process_sections);
+            $result = array_replace_recursive($result, $tmp);
         }
 
         return $result;
