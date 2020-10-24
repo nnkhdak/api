@@ -46,21 +46,17 @@ class Statics {
     /**
      * 現在の環境を取得する。
      * @return string 環境
-     * @see self::ENV_ENVIRONMENT_CONST
      */
     public static function nowEnvironment() {
         $env = getenv(self::ENV_ENVIRONMENT_CONST);
-        echo "$env\n<br/>";
-        if (empty($env) || !self::isEnumEnvironment($env)) {
-            echo "1111\n<br/>";
-            self::putEnvironment();
-            $env = getenv(self::ENV_ENVIRONMENT_CONST);
+        if (self::isEnumEnvironment($env)) {
+            return $env;
         }
-        echo "2222\n<br/>";
-        echo "$env\n<br/>";
+
+        self::putEnvironment();
+        $env = getenv(self::ENV_ENVIRONMENT_CONST);
 
         if (!self::isEnumEnvironment($env)) {
-            echo "3333\n<br/>";
             $env = self::ENV_LOCAL_CONST;
             $key = self::ENV_ENVIRONMENT_CONST;
             $pair = "$key=$env";
