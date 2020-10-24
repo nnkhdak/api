@@ -101,6 +101,13 @@ class Statics {
             $result = parse_ini_file($path);
         }
 
+        $env = self::nowEnvironment();
+        $path = "$prefix.$env.ini";
+        echo "$path\n<br/>";
+        if (file_exists($path)) {
+            $tmp = parse_ini_file($path);
+            $result = array_merge($result, $tmp);
+        }
 
         return $result;
     }
