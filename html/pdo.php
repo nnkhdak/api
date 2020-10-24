@@ -24,4 +24,10 @@ foreach ($rows as $row) {
     echo var_export($row['GROUPID'], true);
     echo "\n<br/>";
 }
+
+$env = Statics::nowEnvironment();
+echo "$env\n<br/>";
+
+$ini = Statics::readIniFile('example');
+echo var_export($ini, true);
 ?>

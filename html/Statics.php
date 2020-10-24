@@ -6,6 +6,12 @@ class Statics {
     const PASS_CONST = 'pass';
     const OPTION_CONST = 'option';
 
+    const ENV_ENVIRONMENT_CONST = 'ENVIRONMENT';
+    const ENV_LOCAL_CONST = 'local';
+    const ENV_DEVELOPMENT_CONST = 'development';
+    const ENV_STAGINT_CONST = 'staging';
+    const ENV_PRODUCTION_CONST = 'production';
+
     /**
      * DBに接続する。
      * @param param array パラメータ
@@ -14,6 +20,7 @@ class Statics {
      * username string ユーザ名
      * passwd string パスワード
      * option array オプション
+     * @return PDO
      */
     public static function connectDatabase($param) {
         $dsn = $param[self::DSN_CONST];
@@ -31,19 +38,74 @@ class Statics {
     public static function putEnvironment($path = '/etc/environment', $throwException = true) {
         $envs = Statics::readKeyValueFile($path, $throwException);
         foreach ($envs as $key => $val) {
-            $env = "$key=$val";
-            putenv($env);
+            $pair = "$key=$val";
+            putenv($pair);
         }
     }
 
     /**
-     * PHPのiniファイルを読み込む。
+     * 現在の環境を取得する。
+     * @return string 環境
+     * @see self::ENV_ENVIRONMENT_CONST
+     */
+    public static function nowEnvironment() {
+        $env = getenv(self::ENV_ENVIRONMENT_CONST);
+        echo "$env\n<br/>";
+        if (empty($env) || !self::isEnumEnvironment($env)) {
+            echo "1111\n<br/>";
+            self::putEnvironment();
+            $env = getenv(self::ENV_ENVIRONMENT_CONST);
+        }
+        echo "2222\n<br/>";
+        echo "$env\n<br/>";
+
+        if (!self::isEnumEnvironment($env)) {
+            echo "3333\n<br/>";
+            $env = self::ENV_LOCAL_CONST;
+            $key = self::ENV_ENVIRONMENT_CONST;
+            $pair = "$key=$env";
+            putenv($pair);
+        }
+
+        return $env;
+    }
+
+    /**
+     * 環境を表す文字列が正しいか判定する。
+     * @param env string 環境を表す文字列
+     * @return boolean 環境を表す文字列
+     */
+    public static function isEnumEnvironment($env) {
+        return $env === self::ENV_LOCAL_CONST 
+        || $env === self::ENV_DEVELOPMENT_CONST
+        || $env === self::ENV_STAGINT_CONST
+        || $env === self::ENV_PRODUCTION_CONST;
+    }
+
+    /**
+     * PHPのiniファイル形式のファイルを読み込みarrayで返す。
      * 読み込んだ際に接尾語に環境名のファイルが存在するならその値で上書く。
      * @param string  path ファイルパス
      * @param boolean throwException エラー発生時に例外をthrowするか(true:する, false:戻り値)
      * @return array(string => string) key=valueの連想配列
      */
     public static function readIniFile($name, $dir = './', $throwException = true) {
+        $result = array();
+
+        $prefix = "$dir/$name";
+        $prefix = str_replace('//', '/', $prefix);
+        $path = "$prefix.ini";
+        if (!file_exists($path)) {
+            $result = "notfound[$path]";
+            if ($throwException) {
+                throw new Exception($result);
+            }
+        } else {
+            $result = parse_ini_file($path);
+        }
+
+
+        return $result;
     }
 
     /**
