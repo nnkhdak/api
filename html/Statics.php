@@ -55,13 +55,14 @@ class Statics {
 
         self::putEnvironment();
         $env = getenv(self::ENV_ENVIRONMENT_CONST);
-
-        if (!self::isEnumEnvironment($env)) {
-            $env = self::ENV_LOCAL_CONST;
-            $key = self::ENV_ENVIRONMENT_CONST;
-            $pair = "$key=$env";
-            putenv($pair);
+        if (self::isEnumEnvironment($env)) {
+            return $env;
         }
+
+        $env = self::ENV_LOCAL_CONST;
+        $key = self::ENV_ENVIRONMENT_CONST;
+        $pair = "$key=$env";
+        putenv($pair);
 
         return $env;
     }
